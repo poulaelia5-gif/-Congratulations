@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>دوس واشوف</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+
+  /* ===== Screen 1: grid of buttons ===== */
+  #grid-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  #grid-screen h2 {
+    margin-bottom: 24px;
+    font-size: 22px;
+    color: #cbd5e1;
+  }
+  .btn-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    max-width: 480px;
+  }
+  .grid-btn {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 18px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.2s;
+  }
+  .grid-btn:hover {
+    background: #4f46e5;
+    transform: scale(1.08);
+  }
+
+  #teaser {
+    margin-top: 26px;
+    font-size: 20px;
+    line-height: 1.6;
+    max-width: 480px;
+    text-align: center;
+    min-height: 30px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #teaser.show { opacity: 1; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+  #teaser.shake { animation: shake 0.4s; }
+
+  /* ===== Screen 2: original button + message screen ===== */
+  #final-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+  }
+  #unlock-screen button,
+  #final-screen button {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    font-size: 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.2s;
+  }
+  #unlock-screen button:hover,
+  #final-screen button:hover {
+    background: #4f46e5;
+    transform: scale(1.05);
+  }
+  #message {
+    margin-top: 24px;
+    font-size: 22px;
+    line-height: 1.6;
+    max-width: 500px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #message.show {
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== Screen 1 ===== -->
+  <div id="grid-screen">
+    <h2>دوس على الزرار الصح 👀</h2>
+    <div class="btn-grid" id="btn-grid"></div>
+    <div id="teaser"></div>
+  </div>
+
+  <!-- ===== Screen 2 (unlock message) ===== -->
+  <div id="unlock-screen" style="display:none; flex-direction: column; align-items: center; text-align: center;">
+    <p style="font-size: 22px; max-width: 480px; line-height: 1.6; margin-bottom: 24px;">TAWALY BALK SHWAYA WNABY M3ANA</p>
+    <button onclick="revealFinalButton()">Click Me</button>
+  </div>
+
+  <!-- ===== Screen 3 (original page) ===== -->
+  <div id="final-screen" style="display:none; flex-direction: column; align-items: center;">
+    <button onclick="showMessage()">Click Me 🎉</button>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const TOTAL_BUTTONS = 10;
+    const UNLOCK_SEQUENCE = [8, 6]; // لازم تدوس 8 وبعدين 6 بالترتيب علشان تفتح
+    let sequenceProgress = 0;
+
+    const teaserMessages = [
+      "طوّلي بالك شوية معانا 😅",
+      "لسه بدري.. جرّبي زرار تاني 😉",
+      "قريبة بس مش هي دي 👀",
+      "يلا كمان مرة، أنتِ قربتِ 💪"
+    ];
+
+    const specialMessages = {
+      2: "TWALY BALK WWSA3Y KHOL2K M3ANA WNABY"
+    };
+
+    const grid = document.getElementById("btn-grid");
+    for (let i = 1; i <= TOTAL_BUTTONS; i++) {
+      const b = document.createElement("button");
+      b.className = "grid-btn";
+      b.textContent = i;
+      b.onclick = () => handleClick(i);
+      grid.appendChild(b);
+    }
+
+    function showTeaser(msg) {
+      const teaser = document.getElementById("teaser");
+      teaser.textContent = msg;
+      teaser.classList.remove("show", "shake");
+      void teaser.offsetWidth;
+      teaser.classList.add("show", "shake");
+    }
+
+    function handleClick(num) {
+      // زرار له رسالة خاصة
+      if (specialMessages[num]) {
+        showTeaser(specialMessages[num]);
+        sequenceProgress = 0; // أي زرار غلط بيصفّر التسلسل
+        return;
+      }
+
+      // تتبع تسلسل الفتح (8 وبعدين 6)
+      if (num === UNLOCK_SEQUENCE[sequenceProgress]) {
+        sequenceProgress++;
+        if (sequenceProgress === UNLOCK_SEQUENCE.length) {
+          document.getElementById("grid-screen").style.display = "none";
+          document.getElementById("unlock-screen").style.display = "flex";
+          return;
+        }
+        // خطوة صح بس لسه مش خلصت التسلسل - نديله تلميح بسيط
+        showTeaser("قريبة بس مش خلصتي.. كمّلي 👀");
+      } else {
+        sequenceProgress = 0;
+        const msg = teaserMessages[Math.floor(Math.random() * teaserMessages.length)];
+        showTeaser(msg);
+      }
+    }
+
+    function revealFinalButton() {
+      document.getElementById("unlock-screen").style.display = "none";
+      document.getElementById("final-screen").style.display = "flex";
+    }
+
+    function showMessage() {
+      const el = document.getElementById("message");
+      el.innerHTML = "Congratulations, Toto! ❤️❤️🎉<br>Finally, you made it! I'm truly happy for you. I always knew this day would come because I believed in you. ❤️<br>I'm confident that one day I'll see you achieve something truly great and become someone important. You deserve every success and all the happiness in the world. ❤️🌹";
+      el.classList.remove("show");
+      void el.offsetWidth; // restart animation
+      el.classList.add("show");
+    }
+  </script>
+</body>
+</html>
